@@ -1,0 +1,29 @@
+# 컴파일러 설정
+CC = gcc
+CFLAGS = -Wall -Wextra -g
+
+# 결과물 이름 (윈도우용이므로 .exe 확장자 사용)
+TARGET = tmap_engine.exe
+
+# 우리가 앞으로 만들 C 파일들
+SRCS = main.c btree.c track.c
+OBJS = $(SRCS:.c=.o)
+
+# 기본 빌드 규칙
+all: $(TARGET)
+
+# 실행 파일 조립
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^
+	@echo "========================================"
+	@echo " [빌드 완료] $(TARGET) 생성 성공! (Plan B)"
+	@echo "========================================"
+
+# 각각의 C 파일을 기계어(o)로 변환
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# 청소 규칙 (윈도우 파워쉘 전용 삭제 명령어)
+clean:
+	del /Q *.o $(TARGET) 2>nul
+	@echo " [청소 완료] 찌꺼기 파일 삭제됨."
