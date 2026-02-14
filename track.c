@@ -84,3 +84,28 @@ void free_track(TacticalTrack* track) {
     // 3-3. Log
     LOG_WAYPOINT("DESTROY", t_id, "Track & History memory released.");
 }
+
+/* =================================================================
+   4. 표적 요격 및 메모리 반환 (Tombstone / Soft Delete 기법)
+================================================================= */
+void intercept_track(TacticalTrack* track) {
+    if (track == NULL || track->threat_level == -1) return;
+
+    // 1. 가장 메모리를 많이 먹는 '과거 궤적(Linked List)'을 하나씩 완벽하게 소각(free)
+    HistoryNode* current = track->history_head;
+    HistoryNode* next_node;
+
+    while (current != NULL) {
+        next_node = current->next;
+        free(current); // 발자국 하나하나 메모리 반환
+        current = next_node;
+    }
+
+    // 2. 표적 상태를 '파괴됨(Destroyed)'으로 변경 (Tombstone 처리)
+    track->history_head = NULL;
+    track->history_count = 0;
+    track->threat_level = -1; // -1은 요격 완료(죽음)를 의미
+
+    // 3. 요격 성공 로그 출력
+    LOG_WAYPOINT("KILL", track->track_id, "Target Destroyed. Trajectory memory 100% reclaimed.");
+}

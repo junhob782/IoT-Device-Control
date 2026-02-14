@@ -190,3 +190,29 @@ void print_btree(BTreeNode* node, int level) {
         }
     }
 }
+
+// 3-3. High-Threat Target Scan (In-order Traversal)
+void scan_high_threat(BTreeNode* node, int threshold) {
+    if (node == NULL) return;
+
+    int i;
+    for (i = 0; i < node->num_keys; i++) {
+        // 1. 왼쪽 자식 나무부터 샅샅이 뒤집니다 (작은 번호부터 탐색)
+        if (!node->is_leaf) {
+            scan_high_threat(node->children[i], threshold);
+        }
+        
+        // 2. 현재 표적의 위협도를 검사합니다 (필터링)
+        if (node->tracks[i]->threat_level >= threshold) {
+            printf("  [ALERT] ID: %-5d | Threat: %-2d | Updates: %d\n", 
+                   node->tracks[i]->track_id, 
+                   node->tracks[i]->threat_level, 
+                   node->tracks[i]->history_count);
+        }
+    }
+    
+    // 3. 마지막 오른쪽 자식 나무도 마저 뒤집니다 (큰 번호 탐색)
+    if (!node->is_leaf) {
+        scan_high_threat(node->children[i], threshold);
+    }
+}
