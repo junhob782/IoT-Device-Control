@@ -3,7 +3,11 @@
 #include <stdlib.h>
 #include <time.h>
 
-// --- 기존 T-MAP 엔진의 핵심 함수들 연결 (Extern) ---
+// --- [저장/로드 시스템 함수 선언] ---
+extern void SaveSystem(BTreeNode* root);
+extern void LoadSystem(BTreeNode** root);
+
+// --- [기존 T-MAP 엔진의 핵심 함수들 연결 (Extern)] ---
 extern TacticalTrack* create_track(int track_id, int threat_level);
 extern void add_history_node(TacticalTrack* track, double lat, double lon, int timestamp);
 extern void intercept_track(TacticalTrack* track);
@@ -80,14 +84,23 @@ bool InterceptFirstHighThreat(BTreeNode* node) {
     return false;
 }
 
-int main(void) {
+int RunRadarGUI(void) {
     InitWindow(800, 600, "T-MAP Tactical Radar - Live Visualization");
     SetTargetFPS(60);
     srand(time(NULL));
 
     BTreeNode* root = NULL;
+
+    // ==========================================
+    // [FIX 1] 프로그램 시작 시 데이터 불러오기
+    // ==========================================
+    LoadSystem(&root);
+
     int current_time = 0;
     int next_id = 1000;
+
+    // 만약 로드된 데이터가 있다면, next_id가 겹치지 않게 증가시켜 줌 (간단한 충돌 방지)
+    if (root != NULL) next_id += 100; 
 
     while (!WindowShouldClose()) {
         // --- [ 컨트롤 (입력) 로직 ] ---
@@ -134,6 +147,11 @@ int main(void) {
 
         EndDrawing();
     }
+
+    // ==========================================
+    // [FIX 2] 프로그램 종료 직전 데이터 저장하기
+    // ==========================================
+    SaveSystem(root);
 
     free_btree(root); // 안전한 종료
     CloseWindow();
