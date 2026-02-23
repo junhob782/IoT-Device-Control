@@ -1,0 +1,46 @@
+# =========================================================
+#  T-MAP TACTICAL SYSTEM BUILD SCRIPT (FINAL)
+# =========================================================
+
+# 1. 컴파일러 설정
+CC = gcc
+
+# 2. 헤더 파일 경로 (include 폴더) & 경고 옵션
+CFLAGS = -I./include -Wall -g
+
+# 3. 라이브러리 경로 (lib 폴더) & 링커 옵션 (Raylib + Windows 필수)
+# 주의: 순서가 중요합니다. Raylib이 먼저 오고, 윈도우 시스템 라이브러리가 뒤에 와야 함
+LDFLAGS = -L./lib -lraylib -lopengl32 -lgdi32 -lwinmm
+
+# 4. 최종 실행 파일 이름
+TARGET = tmap_system.exe
+
+# 5. 소스 파일 목록 (우리가 만든 모든 파일)
+# 주의: main.c는 이제 안 씁니다! launcher.c가 대장입니다.
+SRCS = launcher.c GUI.c track.c btree.c persistence.c quadtree.c
+
+# 6. 오브젝트 파일 변환 (자동 생성)
+OBJS = $(SRCS:.c=.o)
+
+# ---------------------------------------------------------
+#  빌드 규칙 (Make Rules)
+# ---------------------------------------------------------
+
+# 'make' 또는 'mingw32-make' 입력 시 실행
+	all: $(TARGET)
+
+# [링킹] .o 파일들을 모아서 .exe 실행 파일 만들기
+$(TARGET): $(OBJS)
+	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
+	@echo "========================================"
+	@echo " [SUCCESS] System Build Complete: $(TARGET)"
+	@echo "========================================"
+
+# [컴파일] .c 파일을 .o 기계어로 변환
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# [청소] 'make clean' 입력 시 실행 파일과 .o 파일 삭제
+clean:
+		del /Q *.o $(TARGET) 2>nul
+	@echo " [CLEAN] Removed executables and objects."

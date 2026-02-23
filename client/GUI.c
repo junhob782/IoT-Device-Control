@@ -1,14 +1,24 @@
-#include "include/raylib.h"
+#define SCREEN_W 1920
+#define SCREEN_H 1080
+#define CENTER_X (SCREEN_W / 2)
+#define CENTER_Y (SCREEN_H / 2)
+
+
+#ifndef NOGDI
+    #define NOGDI
+#endif
+#ifndef NOUSER
+    #define NOUSER
+#endif
+
+#include "raylib.h"
 #include "common.h"
 #include <stdlib.h>
 #include <time.h>
 
 // --- [해상도 설정: 16인치 모니터용 FHD 모드] ---
 // 화면의 절반 정도를 꽉 채우는 1920 x 1080 사이즈입니다.
-#define SCREEN_W 1920
-#define SCREEN_H 1080
-#define CENTER_X (SCREEN_W / 2)
-#define CENTER_Y (SCREEN_H / 2)
+
 
 // --- [모듈 연동 선언] ---
 typedef struct QuadNode QuadNode;
@@ -170,3 +180,4 @@ int RunRadarGUI(void) {
     CloseWindow();
     return 0;
 }
+

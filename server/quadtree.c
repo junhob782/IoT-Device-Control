@@ -4,26 +4,28 @@
  * @details 화면을 4분면으로 재귀적으로 분할하여 충돌 감지 및 범위 검색 속도를 최적화합니다.
  */
 
-#include "include/raylib.h"
-#include "common.h"
+#include "common.h"  // <--- TargetRect, Vector2, CheckCollisionPointRect 정의가 들어있음
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+// [삭제됨] 여기서 TargetRect를 다시 정의하면 common.h와 충돌하여 에러가 발생합니다.
 
 #define MAX_CAPACITY 4 // 한 구역(상자)에 들어갈 수 있는 최대 드론 수
 
 // 쿼드트리 노드 구조체 (여기서만 씀)
 typedef struct QuadNode {
-    Rectangle boundary;     // 현재 구역의 위치와 크기 (x, y, width, height)
+    TargetRect boundary;                 // 현재 구역의 위치와 크기 (x, y, width, height)
     TacticalTrack* points[MAX_CAPACITY]; // 이 구역에 있는 드론들 포인터
-    int count;              // 현재 저장된 드론 수
+    int count;                           // 현재 저장된 드론 수
     
     // 자식 노드 4개 (북서, 북동, 남서, 남동)
     struct QuadNode *nw, *ne, *sw, *se;
-    bool divided;           // 쪼개졌는지 여부
+    bool divided;                        // 쪼개졌는지 여부
 } QuadNode;
 
 // 1. 쿼드트리 노드 생성
-QuadNode* create_quad_node(Rectangle boundary) {
+QuadNode* create_quad_node(TargetRect boundary) {
     QuadNode* node = (QuadNode*)malloc(sizeof(QuadNode));
     node->boundary = boundary;
     node->count = 0;
@@ -40,10 +42,10 @@ void subdivide(QuadNode* node) {
     float w = node->boundary.width / 2;
     float h = node->boundary.height / 2;
 
-    node->nw = create_quad_node((Rectangle){x, y, w, h});         // 왼쪽 위
-    node->ne = create_quad_node((Rectangle){x + w, y, w, h});     // 오른쪽 위
-    node->sw = create_quad_node((Rectangle){x, y + h, w, h});     // 왼쪽 아래
-    node->se = create_quad_node((Rectangle){x + w, y + h, w, h}); // 오른쪽 아래
+    node->nw = create_quad_node((TargetRect){x, y, w, h});         // 왼쪽 위
+    node->ne = create_quad_node((TargetRect){x + w, y, w, h});     // 오른쪽 위
+    node->sw = create_quad_node((TargetRect){x, y + h, w, h});     // 왼쪽 아래
+    node->se = create_quad_node((TargetRect){x + w, y + h, w, h}); // 오른쪽 아래
     
     node->divided = true;
 }
@@ -55,8 +57,8 @@ bool insert_quad(QuadNode* node, TacticalTrack* track) {
     // 현재 드론의 위치
     Vector2 point = { (float)track->history_tail->lon, (float)track->history_tail->lat };
 
-    // 1. 내 구역 범위 밖이면 무시
-    if (!CheckCollisionPointRec(point, node->boundary)) return false;
+    // 1. 내 구역 범위 밖이면 무시 (common.h에 정의된 함수 사용)
+    if (!CheckCollisionPointRect(point, node->boundary)) return false;
 
     // 2. 자리가 남고, 아직 안 쪼개졌으면 -> 그냥 넣음
     if (node->count < MAX_CAPACITY && !node->divided) {
@@ -69,9 +71,9 @@ bool insert_quad(QuadNode* node, TacticalTrack* track) {
         subdivide(node);
         // 기존에 있던 애들도 자식들한테 이사 보냄 (Re-distribute)
         for (int i = 0; i < node->count; i++) {
-            insert_quad(node->nw, node->points[i]) ||
-            insert_quad(node->ne, node->points[i]) ||
-            insert_quad(node->sw, node->points[i]) ||
+            insert_quad(node->nw, node->points[i]);
+            insert_quad(node->ne, node->points[i]);
+            insert_quad(node->sw, node->points[i]);
             insert_quad(node->se, node->points[i]);
         }
         node->count = 0; // 이사는 끝났으니 카운트 초기화
@@ -84,20 +86,12 @@ bool insert_quad(QuadNode* node, TacticalTrack* track) {
            insert_quad(node->se, track);
 }
 
-// 4. 시각화: 쿼드트리 격자 그리기 (재귀)
+// 4. 시각화 (서버용이므로 주석 처리 유지)
+/*
 void DrawQuadtree(QuadNode* node) {
-    if (node == NULL) return;
-
-    // 현재 구역 테두리 그리기 (회색 선)
-    DrawRectangleLinesEx(node->boundary, 1.0f, Fade(DARKGRAY, 0.5f));
-
-    if (node->divided) {
-        DrawQuadtree(node->nw);
-        DrawQuadtree(node->ne);
-        DrawQuadtree(node->sw);
-        DrawQuadtree(node->se);
-    }
+    // ... 생략 ...
 }
+*/
 
 // 5. 메모리 해제
 void FreeQuadtree(QuadNode* node) {
@@ -119,7 +113,7 @@ void BuildQuadtreeFromBTree(BTreeNode* btree_node, QuadNode* quad_root) {
         if (!btree_node->is_leaf) BuildQuadtreeFromBTree(btree_node->children[i], quad_root);
         
         // 살아있는 드론만 쿼드트리에 등록
-        if (btree_node->tracks[i]->status == TRACK_STATUS_ACTIVE) {
+        if (btree_node->tracks[i]->status == 1) { // 1: ACTIVE (보통 common.h에 정의됨)
             insert_quad(quad_root, btree_node->tracks[i]);
         }
     }

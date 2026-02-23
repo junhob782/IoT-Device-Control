@@ -8,9 +8,50 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#ifndef RAYLIB_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+
+// 1. Vector2 정의
+typedef struct Vector2 {
+    float x;
+    float y;
+} Vector2;
+
+// 2. TargetRect 정의 (구조체 태그와 typedef 이름을 통일)
+typedef struct TargetRect {
+    float x;
+    float y;
+    float width;
+    float height;
+} TargetRect;
+
+// 3. 충돌 체크 함수를 static inline으로 정의하여 모든 .c 파일에서 공유
+static inline bool CheckCollisionPointRect(Vector2 p, TargetRect r) {
+    return (p.x >= r.x && p.x <= (r.x + r.width) && 
+            p.y >= r.y && p.y <= (r.y + r.height));
+}
+
+// 3. 색상 정보를 담는 Color (서버 로직상 필요할 경우)
+typedef struct Color {
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+    unsigned char a;
+} Color;
+
+// 4. Raylib 상수들을 서버용으로 가짜 정의 (Mocking)
+#define DARKGRAY  (Color){ 80, 80, 80, 255 }
+#define GREEN     (Color){ 0, 228, 48, 255 }
+#define RED       (Color){ 230, 41, 55, 255 }
+
+
+#endif
+
+
 
 /* =================================================================
    [1] System Configurations & Debugging
