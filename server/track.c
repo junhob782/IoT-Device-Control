@@ -53,9 +53,11 @@ void add_history_node(TacticalTrack* track, double lat, double lon, int timestam
     
     track->history_count++;
     
-    char msg[100];
-    sprintf(msg, "Pos Update [O(1)] (Lat: %.2f, Lon: %.2f)", lat, lon);
-    LOG_WAYPOINT("UPDATE", track->track_id, msg);
+    // ======== 이 부분을 주석 처리합니다! ========
+    // char msg[100];
+    // sprintf(msg, "Pos Update [O(1)] (Lat: %.2f, Lon: %.2f)", lat, lon);
+    // LOG_WAYPOINT("UPDATE", track->track_id, msg);
+    // ============================================
 }
 
 /**
