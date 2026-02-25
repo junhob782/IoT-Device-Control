@@ -286,7 +286,16 @@ int main(void) {
             }
 
             // ③ 표적 본체 및 LOCK 애니메이션 (이 부분은 기존과 동일하게 유지)
-            DrawCircle(tx, ty, TARGET_SIZE, baseCol);
+            float angle = atan2f(track_list[i].velocity.y, track_list[i].velocity.x);
+
+// 2. 삼각형의 세 꼭짓점 좌표 계산 (기수가 이동 방향을 향하도록)
+Vector2 v1 = { tx + cosf(angle) * TARGET_SIZE, ty - sinf(angle) * TARGET_SIZE }; // 머리
+Vector2 v2 = { tx + cosf(angle + 2.5f) * TARGET_SIZE * 0.8f, ty - sinf(angle + 2.5f) * TARGET_SIZE * 0.8f }; // 왼쪽 날개
+Vector2 v3 = { tx + cosf(angle - 2.5f) * TARGET_SIZE * 0.8f, ty - sinf(angle - 2.5f) * TARGET_SIZE * 0.8f }; // 오른쪽 날개
+
+// 3. 전술 삼각형 그리기
+DrawTriangle(v1, v2, v3, baseCol);
+DrawTriangleLines(v1, v2, v3, WHITE); // 테두리를 흰색으로 줘서 뚜렷하게
             DrawText(TextFormat("ID:%04d", track_list[i].data.id), tx + 25, ty - 25, 20, WHITE);
             if (selected_id == track_list[i].data.id) {
                 DrawCircleLines(tx, ty, SELECT_RING + (int)(sinf(GetTime()*15)*12), GREEN);

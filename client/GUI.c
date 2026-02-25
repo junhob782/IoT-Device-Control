@@ -180,4 +180,3 @@ int RunRadarGUI(void) {
     CloseWindow();
     return 0;
 }
-
